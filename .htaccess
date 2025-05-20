@@ -1,0 +1,13 @@
+# Activation du moteur de réécriture d'URL
+RewriteEngine On
+
+# Définition de la base pour les réécritures
+RewriteBase /DGBDproject/
+
+# Si la requête est pour un fichier existant, ne pas réécrire
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Rediriger toutes les autres requêtes vers index.php
+RewriteRule ^ index.php [QSA,L]

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prise Température</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../assets/icofont/icofont.min.css">
+</head>
+<body>
+<div id="navbar"></div>
+</script>
+
+
+<script>
+    fetch('../navbar.html') // adapte le chemin selon ta structure
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('navbar').innerHTML = html;
+        });
+</script>
+</body>
+</html>
