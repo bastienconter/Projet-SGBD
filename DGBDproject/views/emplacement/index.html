@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Arborescence Emplacements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../assets/icofont/icofont.min.css">
+
+</head>
+<body class="bg-gray-100 p-6">
+<div id="navbar"></div>
+
+<div id="app" class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+
+    <!-- creation des 3 boutons -->
+    <h1 class="text-2xl font-bold text-center text-blue-700 mb-6">Arborescence des Emplacements</h1>
+    <div class="flex justify-center gap-4 mb-4">
+        <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700" @click="afficherFormulaireAjout = !afficherFormulaireAjout">
+            <i class="icofont icofont-plus text-2xl text-white-500"></i> Ajouter emplacement
+        </button>
+        <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50"  :disabled="!id_emplacement" @click="afficherFormulaireDelete = true ">
+            <i class="icofont icofont-bin text-2xl text-white-500 "></i>  Supprimer emplacement
+        </button>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50" :disabled="!id_emplacement" @click="afficherFormulaireUpdate = true">
+            <i class="icofont icofont-ui-edit text-white-500"></i>   Modifier emplacement
+        </button>
+    </div>
+    <!-- fin de creation -->
+    <!-- test pour chragement des données -->
+    <div v-if="loading" class="text-center text-gray-500">Chargement...</div>
+    <div v-if="error" class="text-center text-red-500">Erreur de chargement</div>
+    <!-- fin test-->
+    <!--  -->
+    <div v-if="emplacements.length > 0">
+        <ul>
+
+            <template v-for="emplacement in emplacements">
+                <emplacement-node :node="emplacement" :key="emplacement.id"  @selection="selectionnerEmplacement"></emplacement-node>
+            </template>
+        </ul>
+    </div>
+    <!-- -->
+    <!-- formulaire ajout -->
+    <div v-if="afficherFormulaireAjout" class="fixed inset-0 flex bg-gray-800 bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[90vh] overflow-y-auto">
+            <div class="text-right">
+                <button class="focus:outline-none" @click="afficherFormulaireAjout = false">
+                    <i class="icofont-duotone icofont-close text-2xl text-gray-500 hover:text-gray-700"></i>
+                </button>
+            </div>
+            <h2 class="text-2xl font-semibold mb-4 text-center">Ajouter emplacement</h2>
+
+            <!-- Utilisation de flex-col pour empiler les éléments -->
+            <form class="flex flex-col gap-4">
+                <div>
+                    <label class="block font-semibold">Nom emplacement</label>
+                    <input type="text" v-model="nom_emplacement" class="w-full border px-3 py-1 rounded-md">
+                </div>
+
+                <div>
+                    <label for="emplacementParent" class="block text-lg font-medium text-gray-700">Choisir emplacement parent</label>
+                    <select id="emplacementParent" v-model="parent_id" class="mt-2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="" disabled>Choisir emplacement parent</option>
+                        <option v-for="emplacement2 in emplacements2" :key="emplacement2.id_emplacement" :value="emplacement2.id_emplacement">
+                            {{ emplacement2.nom_emplacement }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end mt-4">
+                    <button type="button" @click="addEmplacement" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- fin form ajout -->
+    <!-- formulaire update -->
+
+    <div v-if="afficherFormulaireUpdate" class="fixed inset-0 flex bg-gray-800 bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[90vh] overflow-y-auto">
+            <div class="text-right">
+                <button class="focus:outline-none" @click="afficherFormulaireUpdate = false">
+                    <i class="icofont-duotone icofont-close text-2xl text-gray-500 hover:text-gray-700"></i>
+                </button>
+            </div>
+            <h2 class="text-2xl font-semibold mb-4 text-center">Modifier emplacement</h2>
+
+            <!-- Utilisation de flex-col pour empiler les éléments -->
+            <form class="flex flex-col gap-4">
+                <div>
+                    <label class="block font-semibold">Nom emplacement</label>
+                    <input type="text" v-model="nom_emplacement" class="w-full border px-3 py-1 rounded-md">
+                </div>
+
+                <div>
+                    <label for="emplacementParent2" class="block text-lg font-medium text-gray-700">modifier emplacement parent</label>
+                    <select id="emplacementParent2" v-model="parent_id" class="mt-2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="" disabled>Choisir emplacement parent</option>
+                        <option v-for="emplacement2 in emplacements2" :key="emplacement2.id_emplacement" :value="emplacement2.id_emplacement">
+                            {{ emplacement2.nom_emplacement }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end mt-4">
+                    <button type="button" @click="updateEmplacement" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        Mofifier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- fin form update -->
+    <!--  form delete -->
+    <div v-if="afficherFormulaireDelete" class="fixed inset-0 flex bg-gray-800 bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <div class="text-right">
+                <button class="focus:outline-none" @click="afficherFormulaireDelete = false">
+                    <i class="icofont-duotone icofont-close text-2xl text-gray-500 hover:text-gray-700"></i>
+                </button>
+            </div>
+            <h2 class="text-2xl font-semibold mb-4 text-red-600">Supprimer l'emplacement</h2>
+            <form class="space-y-4">
+                <p class="text-red-600" >Êtes-vous sûr de vouloir supprimer cet emplacement ?</p>
+
+                <ul class="max-w-md space-y-1 text-gray-500 list-none list-inside dark:text-gray-400">
+                    <li class="text-gray-800"><b>ID : </b>{{ element_id }}</li>
+
+                </ul>
+                <div class="flex justify-between mt-4">
+                    <input type="button" @click="deleteEmplacement()" value="Supprimer" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 cursor-pointer">
+                    <input type="button" @click="afficherFormulaireDelete = false" value="Annuler" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 cursor-pointer">
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- Composant récursif -->
+<script type="text/x-template" id="emplacement-node">
+    <li class="mb-2  " >
+        <div class="font-semibold text-gray-800 cursor-pointer"@click="$emit('selection', node)">
+            📍 {{ node.nom }}
+        </div>
+        <ul class="ml-6 text-sm text-gray-700 list-disc" v-if="node.elements && node.elements.length">
+            <li v-for="el in node.elements" :key="el.id">🧊 {{ el.nom }}</li>
+        </ul>
+        <ul class="ml-6" v-if="node.children && node.children.length"@click="$emit('selection', node)">
+            <emplacement-node v-for="child in node.children" :key="child.id" :node="child" />
+        </ul>
+    </li>
+</script>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+const EmplacementNode = {
+name: 'emplacement-node',
+props: ['node'],
+        template: '#emplacement-node'
+
+    };
+
+    const app = Vue.createApp({
+        components: {
+            EmplacementNode
+        },
+        data() {
+            return {
+                emplacements: [],
+                emplacements2: [],
+                loading: true,
+                error: false,
+                nom_emplacement: '',
+                id_emplacement: '',
+                parent_id: '',
+                afficherFormulaireAjout: false,
+                afficherFormulaireUpdate: false,
+                afficherFormulaireDelete: false
+            };
+        },
+        mounted() {
+            this.getArborescence();
+
+            this.getEmplacements();
+
+        },
+        methods: {
+            getArborescence() {
+                axios.get('http://localhost/DGBDproject/api/emplacement/get_arborescence.php')
+                    .then(response => {
+                        this.emplacements = response.data;
+                        this.loading = false;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        this.error = true;
+                        this.loading = false;
+                    });
+
+            },
+            getEmplacements() {
+                axios.get('http://localhost/DGBDproject/api/emplacement/get_all_emplacement.php')
+                    .then(response => {
+                        this.emplacements2 = response.data;
+                        this.loading = false;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        this.error = true;
+                        this.loading = false;
+                    });
+            },
+
+        updateEmplacement() {
+            const emplacementData = {
+                id: this.id_emplacement,
+                nom: this.nom_emplacement,
+                parent_id: this.parent_id
+            };
+            axios.put('http://localhost/DGBDproject/api/emplacement/put_emplacement.php', JSON.stringify(emplacementData))
+                .then(response => {
+                    alert('Emplacement modifié avec succès');
+                    this.getEmplacements();
+                    this.getArborescence();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Erreur lors de la modification de l\'emplacement');
+                });
+        },
+        deleteEmplacement() {
+            const emplacementData = {
+                id: this.id_emplacement
+            };
+            axios.delete('http://localhost/DGBDproject/api/emplacement/delete_emplacement.php', JSON.stringify(emplacementData))
+                .then(response => {
+                    alert('Emplacement supprimé avec succès');
+                    this.getEmplacements();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Erreur lors de la suppression de l\'emplacement');
+                });
+        },
+        addEmplacement() {
+            const emplacementData = {
+                nom: this.nom_emplacement,
+                parent_id: this.parent_id !== '' ? this.parent_id : null
+            };
+            axios
+                .post('http://localhost/DGBDproject/api/emplacement/post_emplacement.php',JSON.stringify(emplacementData))
+                .then(response => {
+                    alert('Emplacement ajouté avec succès');
+                    this.getEmplacements();
+                    this.afficherFormulaireAjout = false; // Ferme le formulaire après l'ajout
+                    this.getArborescence();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Erreur lors de l\'ajout de l\'emplacement');
+                });
+        },
+            selectionnerEmplacement(emplacement) {
+                this.id_emplacement = emplacement.id;
+                this.nom_emplacement = emplacement.nom;
+                this.parent_id = emplacement.parent_id
+                console.log('Emplacement sélectionné:', emplacement);
+            }
+
+
+        }
+    });
+
+    app.mount('#app');
+</script>
+<script>
+    fetch('../navbar.html') // adapte le chemin selon ta structure
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('navbar').innerHTML = html;
+        });
+</script>
+</body>
+</html>
